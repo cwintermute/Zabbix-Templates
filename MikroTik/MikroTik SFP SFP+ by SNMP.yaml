@@ -1,0 +1,494 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    - uuid: c453881c97c14fd3912fc9e8ceda46be
+      template: 'MikroTik SFP SFPplus by SNMP'
+      name: 'MikroTik SFP/SFP+ by SNMP'
+      description: 'This template adds monitoring for SFP/SFP+ ports.'
+      vendor:
+        name: cwintermute@github
+        version: 0.3a
+      groups:
+        - name: 'Templates/Network devices'
+      items:
+        - uuid: 8585093ba4b141ba90dc8d0def4f7e9e
+          name: 'MikroTik: SNMP walk SFP/SFP+ transceivers'
+          type: SNMP_AGENT
+          snmp_oid: 'walk[1.3.6.1.4.1.14988.1.1.19]'
+          key: mtxrOptical.walk
+          delay: 30s
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+          description: 'Walks the SFP/ SFP+ interfaces via MIKROTIK-MIB::mtxrOptical.'
+          tags:
+            - tag: component
+              value: raw
+      discovery_rules:
+        - uuid: 8b09e2d0fb8840bdb9e13ad304f06bd5
+          name: 'SFP/SFP+ interface discovery'
+          type: DEPENDENT
+          key: mtxrOptical.discovery
+          delay: '0'
+          description: 'Discover interface from MIKROTIK-MIB::mtxrOptical.'
+          item_prototypes:
+            - uuid: e96c851177ac48c3b4fa6b92567e3327
+              name: 'Transceiver {#MTXROPTICALNAME} RX Loss'
+              type: DEPENDENT
+              key: 'mtxrOptical.rxLoss[mtxrOpticalRxLoss.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              description: |
+                RX Loss status on interface.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalName OBJECT-TYPE
+                    SYNTAX DisplayString
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 2 }
+              valuemap:
+                name: 'MIKROTIK-MIB:TrueFalse'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.3.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+              trigger_prototypes:
+                - uuid: e56bec95bfd24c02be591cd594a970c5
+                  expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.rxLoss[mtxrOpticalRxLoss.{#SNMPINDEX}])=1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.rxLoss[mtxrOpticalRxLoss.{#SNMPINDEX}])=0'
+                  name: 'Rx Loss'
+                  priority: AVERAGE
+                  manual_close: 'YES'
+            - uuid: 7ad2b61d4cc84ac2b330e200e5ab28c6
+              name: 'Transceiver {#MTXROPTICALNAME} Rx Power'
+              type: DEPENDENT
+              key: 'mtxrOptical.rxPower[mtxrOpticalRxPower.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              description: |
+                Rx Power of the SFP+ in dBm
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalRxPower OBJECT-TYPE
+                    SYNTAX IDiv1000
+                    UNITS "dBm"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 10 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.10.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: 792785f467d242098ac1d0b5b5d4c1a9
+              name: 'Transceiver {#MTXROPTICALNAME} Module Serial'
+              type: DEPENDENT
+              key: 'mtxrOptical.serial[mtxrOpticalVendorSerial.{#SNMPINDEX}]'
+              delay: '0'
+              history: 1d
+              trends: '0'
+              discover: NO_DISCOVER
+              value_type: TEXT
+              description: |
+                Serial number the inserted Module.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalVendorSerial OBJECT-TYPE
+                    SYNTAX DisplayString
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 12 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.12.{$SFPPLUS_ID}.{#SNMPINDEX}'
+                    - '0'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1d
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: 0a8d6fb5d5cd40468e8f83069dea0887
+              name: 'Transceiver {#MTXROPTICALNAME} Supply Voltage'
+              type: DEPENDENT
+              key: 'mtxrOptical.supplyVoltage[mtxrOpticalSupplyVoltage.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: FLOAT
+              units: V
+              description: |
+                Supply Voltage of the SFP Module.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalSupplyVoltage OBJECT-TYPE
+                    SYNTAX GDiv1000
+                    UNITS "V"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 7 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.7.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: ddfbecf57eae4fb8b17ee9e86f00e207
+              name: 'Transceiver {#MTXROPTICALNAME} Temperature'
+              type: DEPENDENT
+              key: 'mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              units: C
+              description: |
+                Temperature of the Transceiver.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalTemperature OBJECT-TYPE
+                    SYNTAX Gauge32
+                    UNITS "C"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 6 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.6.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+              trigger_prototypes:
+                - uuid: c5c577bba13c4aa4a0b745b5a8228a24
+                  expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}])>{$SFP_TEMP_HIGH}'
+                  name: 'Temperature Alarm - Critical'
+                  priority: HIGH
+                - uuid: 2d18df37471f40b1a8816c9bdb0854df
+                  expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}])>{$SFP_TEMP_WARN}'
+                  name: 'Temperature Alarm - Warning'
+                  priority: WARNING
+            - uuid: a5da6df645e845a7999ea923fc936819
+              name: 'Transceiver {#MTXROPTICALNAME} Tx Bias Current'
+              type: DEPENDENT
+              key: 'mtxrOptical.txBiasCurrent[mtxrOpticalTxBiasCurrent.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              units: mA
+              description: |
+                I dunno at this moment...
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalTxBiasCurrent OBJECT-TYPE
+                    SYNTAX Gauge32
+                    UNITS "mA"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 8 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.8.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: 7e70f0c7295846379a1b3a52e3c0f95f
+              name: 'Transceiver {#MTXROPTICALNAME} Tx Fault'
+              type: DEPENDENT
+              key: 'mtxrOptical.txFault[mtxrOpticalTxFault.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              units: mA
+              description: |
+                Tx Fault status on interface.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalTxFault OBJECT-TYPE
+                    SYNTAX BoolValue
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 4 }
+              valuemap:
+                name: 'MIKROTIK-MIB:TrueFalse'
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.4.{#SNMPINDEX}'
+                    - '0'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+              trigger_prototypes:
+                - uuid: 54d0c0abe3534bd29db88976ee6c2acd
+                  expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.txFault[mtxrOpticalTxFault.{#SNMPINDEX}])=1'
+                  recovery_mode: RECOVERY_EXPRESSION
+                  recovery_expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.txFault[mtxrOpticalTxFault.{#SNMPINDEX}])=0'
+                  name: 'Tx Fault'
+                  priority: HIGH
+                  manual_close: 'YES'
+            - uuid: 8c6bdd33628e4dad8d32d61ffbc29425
+              name: 'Transceiver {#MTXROPTICALNAME} Tx Power'
+              type: DEPENDENT
+              key: 'mtxrOptical.txPower[mtxrOpticalTxPower.{#SNMPINDEX}]'
+              delay: '0'
+              history: 7d
+              trends: '0'
+              value_type: FLOAT
+              units: dBm
+              description: |
+                Tx Power of the SFP+ in dBm
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalTxPower OBJECT-TYPE
+                    SYNTAX IDiv1000
+                    UNITS "dBm"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 9 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.9.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.001'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: a5921ef6f49a48ad94eda34341fd08b4
+              name: 'Transceiver {#MTXROPTICALNAME} Module Vendor'
+              type: DEPENDENT
+              key: 'mtxrOptical.vendor[mtxrOpticalVendorName.{#SNMPINDEX}]'
+              delay: '0'
+              history: 1d
+              trends: '0'
+              discover: NO_DISCOVER
+              value_type: TEXT
+              description: |
+                Vendor of the inserted Module.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalVendorName OBJECT-TYPE
+                    SYNTAX DisplayString
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 11 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.11.{#SNMPINDEX}'
+                    - '0'
+                - type: DISCARD_UNCHANGED_HEARTBEAT
+                  parameters:
+                    - 1d
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+            - uuid: d5d942e3b3914bfc9bb53183f01e18b1
+              name: 'Transceiver {#MTXROPTICALNAME} Wavelength'
+              type: DEPENDENT
+              key: 'mtxrOptical.wavelength[mtxrOpticalWavelength.{#SNMPINDEX}]'
+              delay: '0'
+              history: 1d
+              trends: '0'
+              discover: NO_DISCOVER
+              units: nm
+              description: |
+                Wavelength of the SFP Module.
+                
+                MIB: MIKROTIK-MIB
+                
+                mtxrOpticalWavelength OBJECT-TYPE
+                    SYNTAX GDiv100
+                    UNITS "nm"
+                    MAX-ACCESS read-only
+                    STATUS current
+                    DESCRIPTION ""
+                    ::= { mtxrOpticalTableEntry 5 }
+              preprocessing:
+                - type: SNMP_WALK_VALUE
+                  parameters:
+                    - '1.3.6.1.4.1.14988.1.1.19.1.1.5.{#SNMPINDEX}'
+                    - '0'
+                - type: MULTIPLIER
+                  parameters:
+                    - '0.01'
+              master_item:
+                key: mtxrOptical.walk
+              tags:
+                - tag: component
+                  value: network
+                - tag: interface
+                  value: '{#MTXROPTICALNAME}'
+          trigger_prototypes:
+            - uuid: 736a45472d0b4ffd845c80c44c42125b
+              expression: 'change(/MikroTik SFP SFPplus by SNMP/mtxrOptical.rxPower[mtxrOpticalRxPower.{#SNMPINDEX}])>-2 or change(/MikroTik SFP SFPplus by SNMP/mtxrOptical.txPower[mtxrOpticalTxPower.{#SNMPINDEX}])>-2'
+              name: 'Transceiver Signal Change'
+              priority: AVERAGE
+          graph_prototypes:
+            - uuid: 4d6cb1d95e724eafbb9b7829dc77b518
+              name: 'Transceiver {#MTXROPTICALNAME} power levels'
+              graph_items:
+                - color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: 'MikroTik SFP SFPplus by SNMP'
+                    key: 'mtxrOptical.rxPower[mtxrOpticalRxPower.{#SNMPINDEX}]'
+                - sortorder: '1'
+                  color: F63100
+                  calc_fnc: ALL
+                  item:
+                    host: 'MikroTik SFP SFPplus by SNMP'
+                    key: 'mtxrOptical.txPower[mtxrOpticalTxPower.{#SNMPINDEX}]'
+            - uuid: b14189c76df64aa18f928c1aa3d71d80
+              name: 'Transceiver {#MTXROPTICALNAME} temperature'
+              graph_items:
+                - color: 199C0D
+                  calc_fnc: ALL
+                  item:
+                    host: 'MikroTik SFP SFPplus by SNMP'
+                    key: 'mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}]'
+          master_item:
+            key: mtxrOptical.walk
+          preprocessing:
+            - type: SNMP_WALK_TO_JSON
+              parameters:
+                - '{#MTXROPTICALNAME}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.2
+                - '0'
+                - '{#MTXROPTICALRXLOSS}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.3
+                - '0'
+                - '{#MTXROPTICALTXFAULT}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.4
+                - '0'
+                - '{#MTXROPTICALWAVELENGTH}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.5
+                - '0'
+                - '{#MTXROPTICALTEMPERATURE}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.6
+                - '0'
+                - '{#MTXROPTICALSUPPLYVOLTAGE}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.7
+                - '0'
+                - '{#MTXROPTICALTXBIASCURRENT}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.8
+                - '0'
+                - '{#MTXROPTICALTXPOWER}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.9
+                - '0'
+                - '{#MTXROPTICALRXPOWER}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.10
+                - '0'
+                - '{#MTXROPTICALVENDORNAME}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.11
+                - '0'
+                - '{#MTXROPTICALVENDORSERIAL}'
+                - 1.3.6.1.4.1.14988.1.1.19.1.1.12
+                - '0'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1h
+      tags:
+        - tag: class
+          value: network
+        - tag: target
+          value: mikrotik
+      macros:
+        - macro: '{$SFP_TEMP_HIGH}'
+          value: '75'
+          description: 'S+RJ10 Units can reach 85 *C when operating'
+        - macro: '{$SFP_TEMP_WARN}'
+          value: '70'
+          description: 'High end of operating range for MikroTik S+RJ10'
+      valuemaps:
+        - uuid: 807caa6a499145deaadf41902289f1e3
+          name: 'MIKROTIK-MIB:TrueFalse'
+          mappings:
+            - value: '0'
+              newvalue: 'false'
+            - value: '1'
+              newvalue: 'true'
