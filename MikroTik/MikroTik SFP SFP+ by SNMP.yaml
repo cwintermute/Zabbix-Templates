@@ -10,7 +10,7 @@ zabbix_export:
       description: 'This template adds monitoring for SFP/SFP+ ports.'
       vendor:
         name: cwintermute@github
-        version: 0.4a
+        version: 0.5a
       groups:
         - name: 'Templates/Network devices'
       items:
@@ -73,7 +73,7 @@ zabbix_export:
                   recovery_mode: RECOVERY_EXPRESSION
                   recovery_expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.rxLoss[mtxrOpticalRxLoss.{#SNMPINDEX}])=0'
                   name: 'Rx Loss'
-                  priority: AVERAGE
+                  priority: HIGH
                   manual_close: 'YES'
                   tags:
                     - tag: scope

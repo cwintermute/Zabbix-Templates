@@ -9,6 +9,12 @@
 - Has module Vendor, Serial and Wavelength monitoring options available.
   - To activate, go to Item prototypes for "SFP/SFP+ interface discovery" and enable the options you woud like.
 
+### To-Do
+
+- Make descriptions of the Item Prototypes more useful. Currently just quick descriptions and the MIB info.
+
+- Add filtering to not process interfaces that don't report any statistics.
+
 ### Versions
 
 - 0.1a - Initial hacked together version. Heavily inspired by the "MikroTik by SNMP" template.
@@ -19,3 +25,6 @@
   - Cleaned up description and some variable names.
 
 - 0.4a: Added missing scope tags to trigger prototypes.
+
+- 0.5a: Fixed severity level for RX Loss trigger prototype.
+
