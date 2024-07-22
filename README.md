@@ -1,2 +1,2 @@
 # Zabbix-Templates
-Zabbix templates primarily for MikroTik based devices.
+Place to store my Zabbix templates. Currently WIP is MikroTik templates.
