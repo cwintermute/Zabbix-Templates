@@ -10,7 +10,7 @@ zabbix_export:
       description: 'This template adds monitoring for SFP/SFP+ ports.'
       vendor:
         name: cwintermute@github
-        version: 0.3a
+        version: 0.4a
       groups:
         - name: 'Templates/Network devices'
       items:
@@ -75,6 +75,9 @@ zabbix_export:
                   name: 'Rx Loss'
                   priority: AVERAGE
                   manual_close: 'YES'
+                  tags:
+                    - tag: scope
+                      value: availability
             - uuid: 7ad2b61d4cc84ac2b330e200e5ab28c6
               name: 'Transceiver {#MTXROPTICALNAME} Rx Power'
               type: DEPENDENT
@@ -219,10 +222,16 @@ zabbix_export:
                   expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}])>{$SFP_TEMP_HIGH}'
                   name: 'Temperature Alarm - Critical'
                   priority: HIGH
+                  tags:
+                    - tag: scope
+                      value: notice
                 - uuid: 2d18df37471f40b1a8816c9bdb0854df
                   expression: 'last(/MikroTik SFP SFPplus by SNMP/mtxrOptical.temperature[mtxrOpticalTemperature.{#SNMPINDEX}])>{$SFP_TEMP_WARN}'
                   name: 'Temperature Alarm - Warning'
                   priority: WARNING
+                  tags:
+                    - tag: scope
+                      value: notice
             - uuid: a5da6df645e845a7999ea923fc936819
               name: 'Transceiver {#MTXROPTICALNAME} Tx Bias Current'
               type: DEPENDENT
@@ -296,6 +305,9 @@ zabbix_export:
                   name: 'Tx Fault'
                   priority: HIGH
                   manual_close: 'YES'
+                  tags:
+                    - tag: scope
+                      value: availability
             - uuid: 8c6bdd33628e4dad8d32d61ffbc29425
               name: 'Transceiver {#MTXROPTICALNAME} Tx Power'
               type: DEPENDENT
@@ -408,6 +420,9 @@ zabbix_export:
               expression: 'change(/MikroTik SFP SFPplus by SNMP/mtxrOptical.rxPower[mtxrOpticalRxPower.{#SNMPINDEX}])>-2 or change(/MikroTik SFP SFPplus by SNMP/mtxrOptical.txPower[mtxrOpticalTxPower.{#SNMPINDEX}])>-2'
               name: 'Transceiver Signal Change'
               priority: AVERAGE
+              tags:
+                - tag: scope
+                  value: performance
           graph_prototypes:
             - uuid: 4d6cb1d95e724eafbb9b7829dc77b518
               name: 'Transceiver {#MTXROPTICALNAME} power levels'

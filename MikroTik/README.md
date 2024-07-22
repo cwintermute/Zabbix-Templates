@@ -17,3 +17,5 @@
 
 - 0.3a: Initial committed version.
   - Cleaned up description and some variable names.
+
+- 0.4a: Added missing scope tags to trigger prototypes.
