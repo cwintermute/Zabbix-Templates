@@ -28,3 +28,12 @@
 
 - 0.5a: Fixed severity level for RX Loss trigger prototype.
 
+### Templates were tested on the following hardware (RouterOS: 7.x)
+
+- [RB5009UG+S+](https://mikrotik.com/product/rb5009ug_s_in)
+- [CRS305-1G-4S+](https://mikrotik.com/product/crs305_1g_4s_in)
+- [CRS310-8G+2S+](https://mikrotik.com/product/crs310_8g_2s_in)
+- [CSS610-8P-2S+](https://mikrotik.com/product/css610_8p_2s_in)
+- [CRS112-8P-4S](https://mikrotik.com/product/crs112_8p_4s_in)
+- [cAPGi-5HaxD2HaxD](https://mikrotik.com/product/cap_ax)
+- [RB960PGS](https://mikrotik.com/product/RB960PGS)
